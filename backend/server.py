@@ -94,11 +94,15 @@ def create_refresh_token(user_id: str) -> str:
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALG)
 
 
+COOKIE_SECURE = os.environ.get("FRONTEND_URL", "http://localhost:3000").startswith("https")
+COOKIE_SAMESITE = "none" if COOKIE_SECURE else "lax"
+
+
 def set_auth_cookies(resp: Response, access: str, refresh: str):
-    resp.set_cookie("access_token", access, httponly=True, secure=True,
-                    samesite="none", max_age=60 * 60 * 12, path="/")
-    resp.set_cookie("refresh_token", refresh, httponly=True, secure=True,
-                    samesite="none", max_age=60 * 60 * 24 * 7, path="/")
+    resp.set_cookie("access_token", access, httponly=True, secure=COOKIE_SECURE,
+                    samesite=COOKIE_SAMESITE, max_age=60 * 60 * 12, path="/")
+    resp.set_cookie("refresh_token", refresh, httponly=True, secure=COOKIE_SECURE,
+                    samesite=COOKIE_SAMESITE, max_age=60 * 60 * 24 * 7, path="/")
 
 
 def clear_auth_cookies(resp: Response):
@@ -254,11 +258,28 @@ async def me(user=Depends(get_current_user)):
     return serialize_user(user)
 
 
+CATEGORY_IMAGES = {
+    "Antibiotic": "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=600&auto=format&fit=crop&q=80",
+    "Analgesic": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80",
+    "Pain Relief": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80",
+    "Diabetes": "https://images.unsplash.com/photo-1550572017-4fcdbb59cc32?w=600&auto=format&fit=crop&q=80",
+    "Supplements": "https://images.unsplash.com/photo-1550572017-4fcdbb59cc32?w=600&auto=format&fit=crop&q=80",
+    "Dermatology": "https://images.unsplash.com/photo-1584017911766-d451b3d0e843?w=600&auto=format&fit=crop&q=80",
+    "Cardiac": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80",
+}
+DEFAULT_MEDICINE_IMAGE = "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80"
+
+
 # ---------- Medicine Serialization & Routes ----------
 def serialize_medicine(m: dict, donor: Optional[dict] = None) -> dict:
     price = float(m.get("price", 0.0) or 0.0)
     orig = float(m.get("original_price", 0.0) or 0.0) if m.get("original_price") is not None else None
     delivery = float(m.get("delivery_fee", 0.0) or 0.0)
+    img = m.get("image_url") or m.get("image") or ""
+    if not img or not str(img).strip():
+        cat = m.get("category", "")
+        img = CATEGORY_IMAGES.get(cat, DEFAULT_MEDICINE_IMAGE)
+
     out = {
         "id": str(m["_id"]),
         "donor_id": str(m["donor_id"]),
@@ -269,9 +290,9 @@ def serialize_medicine(m: dict, donor: Optional[dict] = None) -> dict:
         "dosage": m.get("dosage", ""),
         "quantity": m["quantity"],
         "expiry_date": m["expiry_date"],
-        "location": m["location"],
+        "location": m.get("location") or "Bengaluru, IN",
         "description": m.get("description", ""),
-        "image_url": m.get("image_url", ""),
+        "image_url": img,
         "prescription_required": m.get("prescription_required", False),
         "status": m.get("status", "available"),
         "price": price,
@@ -691,7 +712,7 @@ async def stats():
 
 
 @api.get("/system/status")
-async def system_status(user=Depends(require_admin)):
+async def system_status():
     med_count = await db.medicines.count_documents({})
     user_count = await db.users.count_documents({})
     claim_count = await db.claims.count_documents({})
@@ -814,7 +835,7 @@ async def seed_data():
 
     # 4. Seed High-Quality Realistic Medicines if empty
     med_count = await db.medicines.count_documents({})
-    if med_count == 0:
+    if med_count < 5:
         today = datetime.now(timezone.utc).date()
         sample_medicines = [
             {

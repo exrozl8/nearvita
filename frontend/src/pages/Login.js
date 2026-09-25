@@ -17,7 +17,13 @@ export default function Login() {
     setBusy(false);
     if (r.ok) {
       toast.success(`Welcome, ${r.user.name.split(" ")[0]}!`);
-      navigate(r.user.role === "donor" ? "/donor" : "/receiver");
+      const dest =
+        r.user.role === "donor"
+          ? "/donor"
+          : r.user.role === "admin"
+          ? "/browse"
+          : "/receiver";
+      navigate(dest);
     } else {
       toast.error(r.error);
     }

@@ -58,18 +58,16 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-3">
-            {user?.role === "admin" && (
-              <button
-                type="button"
-                onClick={() => setShowExplorer(true)}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-medium transition shadow-sm"
-                title="Open the admin backend monitor"
-              >
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <Server size={13} />
-                <span className="hidden sm:inline font-mono">Backend Live</span>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => setShowExplorer(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-medium transition shadow-sm"
+              title="Click to view Live Backend Architecture, Database Collections & API Playground"
+            >
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <Server size={13} />
+              <span className="hidden sm:inline font-mono">Backend Live</span>
+            </button>
 
             {user ? (
               <>

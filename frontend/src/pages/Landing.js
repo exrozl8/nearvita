@@ -5,11 +5,11 @@ import { ArrowUpRight, ShieldCheck, TimerReset, HeartHandshake } from "lucide-re
 import MedicineCard from "@/components/MedicineCard";
 
 const HERO_IMG =
-  "https://images.unsplash.com/photo-1770775776141-6b3ac7ef9dd3?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NjZ8MHwxfHNlYXJjaHwxfHxjbGVhbiUyMG1vZGVybiUyMG1lZGljYWwlMjBidWlsZGluZ3xlbnwwfHx8fDE3ODYzODU5MDJ8MA&ixlib=rb-4.1.0&q=85";
+  "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=80";
 const MED_MACRO =
-  "https://images.unsplash.com/photo-1549477752-31cd7327aed0?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1ODR8MHwxfHNlYXJjaHwzfHxtZWRpY2luZSUyMHBpbGxzJTIwY2xvc2UlMjB1cCUyMG1hY3JvfGVufDB8fHx8MTc4NjM4NTg4M3ww&ixlib=rb-4.1.0&q=85";
+  "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=1200&q=80";
 const SORT_IMG =
-  "https://images.unsplash.com/photo-1580281657527-47f249e8f4df?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1NzB8MHwxfHNlYXJjaHwxfHxwaGFybWFjaXN0JTIwc29ydGluZyUyMGJveGVzfGVufDB8fHx8MTc4NjM4NTg4Mnww&ixlib=rb-4.1.0&q=85";
+  "https://images.unsplash.com/photo-1576602976047-174e57fd0545?auto=format&fit=crop&w=1200&q=80";
 
 export default function Landing() {
   const [stats, setStats] = useState({ available_medicines: 0, donors: 0, receivers: 0, delivered: 0 });
