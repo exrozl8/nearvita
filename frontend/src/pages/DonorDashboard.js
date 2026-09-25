@@ -133,10 +133,11 @@ function Stat({ label, value, accent }) {
 }
 
 function NewListingForm({ onDone }) {
+  const [isFreeDonation, setIsFreeDonation] = useState(true);
   const [f, setF] = useState({
     name: "", brand: "", category: "Antibiotic", form: "Tablet", dosage: "",
     quantity: 1, expiry_date: "", location: "", description: "", image_url: "",
-    prescription_required: false,
+    prescription_required: false, price: 0, original_price: "", delivery_fee: 0,
   });
   const [busy, setBusy] = useState(false);
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }));
@@ -145,8 +146,15 @@ function NewListingForm({ onDone }) {
     e.preventDefault();
     setBusy(true);
     try {
-      await api.post("/medicines", { ...f, quantity: parseInt(f.quantity) });
-      toast.success("Listing added");
+      const payload = {
+        ...f,
+        quantity: parseInt(f.quantity),
+        price: isFreeDonation ? 0.0 : parseFloat(f.price || 0),
+        original_price: f.original_price ? parseFloat(f.original_price) : null,
+        delivery_fee: parseFloat(f.delivery_fee || 0),
+      };
+      await api.post("/medicines", payload);
+      toast.success("Listing added successfully");
       onDone();
     } catch (err) {
       toast.error(formatApiErrorDetail(err.response?.data?.detail));
@@ -158,11 +166,11 @@ function NewListingForm({ onDone }) {
   return (
     <form onSubmit={submit} className="hairline bg-white p-6 grid grid-cols-1 md:grid-cols-3 gap-4" data-testid="new-listing-form">
       <div className="md:col-span-3 flex items-baseline justify-between mb-2">
-        <div className="eyebrow">New listing</div>
+        <div className="eyebrow">New Medicine Listing</div>
         <div className="text-xs text-neutral-500">Fields marked with * are required</div>
       </div>
       <Input label="Medicine name*" v={f.name} on={(v) => set("name", v)} tid="ml-name" required />
-      <Input label="Brand" v={f.brand} on={(v) => set("brand", v)} tid="ml-brand" />
+      <Input label="Brand / Manufacturer" v={f.brand} on={(v) => set("brand", v)} tid="ml-brand" />
       <Select label="Category*" v={f.category} on={(v) => set("category", v)} options={CATEGORIES} tid="ml-category" />
       <Select label="Form" v={f.form} on={(v) => set("form", v)} options={FORMS} tid="ml-form" />
       <Input label="Dosage (e.g. 500mg)" v={f.dosage} on={(v) => set("dosage", v)} tid="ml-dosage" />
@@ -170,12 +178,69 @@ function NewListingForm({ onDone }) {
       <Input label="Expiry date*" type="date" v={f.expiry_date} on={(v) => set("expiry_date", v)} tid="ml-expiry" required />
       <Input label="Pickup city*" v={f.location} on={(v) => set("location", v)} tid="ml-location" required />
       <Input label="Image URL" v={f.image_url} on={(v) => set("image_url", v)} tid="ml-image" />
+      
+      {/* Pricing Mode Selector */}
+      <div className="md:col-span-3 p-4 rounded-lg bg-neutral-50 border border-neutral-200">
+        <label className="eyebrow block mb-2">Listing Model</label>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+            <input
+              type="radio"
+              name="donation_mode"
+              checked={isFreeDonation}
+              onChange={() => {
+                setIsFreeDonation(true);
+                set("price", 0);
+              }}
+            />
+            🎁 100% Free Donation (No cost to receiver)
+          </label>
+          <label className="flex items-center gap-2 text-xs font-semibold cursor-pointer">
+            <input
+              type="radio"
+              name="donation_mode"
+              checked={!isFreeDonation}
+              onChange={() => setIsFreeDonation(false)}
+            />
+            💳 Subsidized / Nominal Fee (Affordable Healthcare)
+          </label>
+        </div>
+
+        {!isFreeDonation && (
+          <div className="mt-3 grid grid-cols-1 md:grid-cols-3 gap-3 pt-3 border-t border-neutral-200">
+            <Input
+              label="Subsidized Price (₹)*"
+              type="number"
+              v={f.price}
+              on={(v) => set("price", v)}
+              tid="ml-price"
+              required={!isFreeDonation}
+            />
+            <Input
+              label="Original Retail MRP (₹)"
+              type="number"
+              v={f.original_price}
+              on={(v) => set("original_price", v)}
+              tid="ml-mrp"
+            />
+            <Input
+              label="Delivery / Courier Fee (₹)"
+              type="number"
+              v={f.delivery_fee}
+              on={(v) => set("delivery_fee", v)}
+              tid="ml-delivery"
+            />
+          </div>
+        )}
+      </div>
+
       <div className="md:col-span-3">
         <label className="block text-xs font-medium mb-1.5">Description</label>
         <textarea
           rows={3}
           value={f.description}
           onChange={(e) => set("description", e.target.value)}
+          placeholder="Sealed packaging, storage temperature, batch condition…"
           className="w-full px-3 py-2 border border-[hsl(var(--border))] text-sm"
           data-testid="ml-description-input"
         />
@@ -253,15 +318,25 @@ export function RequestRow({ c, role, onChange }) {
           <div className="flex items-center gap-3">
             <div className="eyebrow">{c.medicine?.category}</div>
             <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 ${statusColor}`}>{c.status}</span>
+            {c.transaction_id && (
+              <span className="text-[10px] font-semibold tracking-wider px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                💳 Paid ₹{c.amount_paid} ({c.payment_method?.toUpperCase()})
+              </span>
+            )}
           </div>
           <div className="font-display text-2xl mt-1">{c.medicine?.name}</div>
           <div className="text-xs text-neutral-600 mt-1">
             {role === "donor" ? `From ${c.receiver?.organization || c.receiver?.name}` : `To ${c.donor?.organization || c.donor?.name}`}
             {" · "}Qty {c.quantity_requested}{" · "}{c.medicine?.location}
           </div>
+          {c.transaction_id && (
+            <div className="text-[11px] font-mono text-neutral-500 mt-1">
+              Order Ref: {c.transaction_id}
+            </div>
+          )}
           {c.message && <div className="mt-3 text-sm bg-[hsl(var(--secondary))] p-3 italic">"{c.message}"</div>}
           <div className="mt-3 flex gap-3">
-            <Link to={`/claims/${c.id}`} className="text-xs underline" data-testid={`claim-thread-link-${c.id}`}>Open thread →</Link>
+            <Link to={`/claims/${c.id}`} className="text-xs underline text-[#E05A47] font-medium" data-testid={`claim-thread-link-${c.id}`}>Open coordination thread →</Link>
           </div>
         </div>
         {role === "donor" && c.status === "pending" && (

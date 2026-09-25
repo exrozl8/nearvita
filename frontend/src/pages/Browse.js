@@ -22,6 +22,7 @@ export default function Browse() {
   const [location, setLocation] = useState("");
   const [daysToExpiry, setDaysToExpiry] = useState("");
   const [loading, setLoading] = useState(true);
+  const [priceFilter, setPriceFilter] = useState("all");
 
   const load = async () => {
     setLoading(true);
@@ -42,6 +43,12 @@ export default function Browse() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const displayedItems = items.filter((it) => {
+    if (priceFilter === "free") return it.is_free || Number(it.price) === 0;
+    if (priceFilter === "paid") return !it.is_free && Number(it.price) > 0;
+    return true;
+  });
 
   return (
     <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-12" data-testid="browse-page">
@@ -124,19 +131,42 @@ export default function Browse() {
         </div>
       </div>
 
-      <div className="mt-6 text-xs text-neutral-500 flex items-center gap-2" data-testid="browse-results-count">
-        <span className="font-mono-alt">{items.length}</span> listings
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="text-xs text-neutral-500 flex items-center gap-2" data-testid="browse-results-count">
+          <span className="font-mono-alt font-bold text-neutral-800">{displayedItems.length}</span> listings available
+        </div>
+
+        {/* Pricing filter pills */}
+        <div className="flex items-center gap-2">
+          {[
+            { id: "all", label: "All Items" },
+            { id: "free", label: "🎁 Free Donations Only" },
+            { id: "paid", label: "💳 Subsidized / Affordable" },
+          ].map((pill) => (
+            <button
+              key={pill.id}
+              onClick={() => setPriceFilter(pill.id)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium transition ${
+                priceFilter === pill.id
+                  ? "bg-[#0D1117] text-white"
+                  : "bg-white hairline text-neutral-600 hover:text-neutral-900 border border-neutral-200"
+              }`}
+            >
+              {pill.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {loading ? (
           <div className="col-span-3 py-24 text-center text-neutral-500 text-sm">Loading…</div>
-        ) : items.length === 0 ? (
+        ) : displayedItems.length === 0 ? (
           <div className="col-span-3 py-24 text-center text-neutral-500 text-sm" data-testid="browse-empty">
             No listings match yet. Try widening your filters.
           </div>
         ) : (
-          items.map((m, i) => <MedicineCard key={m.id} m={m} index={i} />)
+          displayedItems.map((m, i) => <MedicineCard key={m.id} m={m} index={i} />)
         )}
       </div>
     </div>

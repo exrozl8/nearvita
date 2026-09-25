@@ -28,9 +28,9 @@ export default function Landing() {
           <div className="col-span-12 lg:col-span-7 relative">
             <div className="flex items-center gap-3 mb-8 fade-up">
               <span className="chip" data-testid="hero-tagline-chip">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#E05A47]" /> Issue 001 · Feb 2026
+                <span className="w-1.5 h-1.5 rounded-full bg-[#E05A47]" /> NearVita 2.4 Live
               </span>
-              <span className="eyebrow">A humanitarian pharma network</span>
+              <span className="eyebrow">Near-Expiry Medicine Network & Payment Gateway</span>
             </div>
             <h1
               className="font-display text-[15vw] sm:text-[10vw] lg:text-[7.2vw] leading-[0.9] tracking-tighter fade-up delay-1"
@@ -42,17 +42,16 @@ export default function Landing() {
               </em>
             </h1>
             <p className="mt-8 max-w-xl text-lg text-neutral-700 fade-up delay-2">
-              NearVita is a curated donor network that redirects unopened,
-              near-expiry medicines from hospitals, pharmacies and households
-              to verified NGOs and patients — before they turn into medical
-              waste.
+              NearVita connects pharmacies, hospitals, and donors to community clinics,
+              NGOs, and patients. Claim free donations or purchase near-expiry inventory
+              at 70-90% discount with instant UPI and card checkout.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4 fade-up delay-3">
-              <Link to="/register" className="btn-primary" data-testid="hero-cta-donate">
-                Donate a medicine <ArrowUpRight size={16} />
+              <Link to="/browse" className="btn-primary" data-testid="hero-cta-browse">
+                Browse catalogue & checkout <ArrowUpRight size={16} />
               </Link>
-              <Link to="/browse" className="btn-outline" data-testid="hero-cta-browse">
-                Browse near-expiry stock
+              <Link to="/register" className="btn-outline" data-testid="hero-cta-donate">
+                Register as Donor
               </Link>
             </div>
             <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 fade-up delay-4">
