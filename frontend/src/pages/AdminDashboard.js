@@ -6,6 +6,7 @@ import {
   Search,
   Check,
   Ban,
+  Sparkles,
 } from "lucide-react";
 
 export default function AdminDashboard() {
@@ -15,6 +16,20 @@ export default function AdminDashboard() {
   const [filter, setFilter] = useState("all"); // all | pending | approved
   const [search, setSearch] = useState("");
   const [busyId, setBusyId] = useState(null);
+  const [seeding, setSeeding] = useState(false);
+
+  const handleSeedDemo = async () => {
+    setSeeding(true);
+    try {
+      const res = await api.post("/admin/seed-demo");
+      toast.success(res.data.message || "Showcase data populated successfully!");
+      loadData();
+    } catch (err) {
+      toast.error(formatApiErrorDetail(err.response?.data?.detail));
+    } finally {
+      setSeeding(false);
+    }
+  };
 
   const loadData = async () => {
     setLoading(true);
@@ -91,13 +106,54 @@ export default function AdminDashboard() {
             only credentialed NGOs, charitable dispensaries, and verified clinics may claim donated medicines.
           </p>
         </div>
-        <div className="col-span-12 lg:col-span-4 flex lg:justify-end">
+        <div className="col-span-12 lg:col-span-4 flex flex-wrap gap-2 lg:justify-end items-center">
+          <button
+            onClick={handleSeedDemo}
+            disabled={seeding}
+            className="btn-primary !py-2 !px-4 !text-xs !bg-emerald-700 hover:!bg-emerald-800 gap-1.5 shadow-sm"
+            title="Populates realistic, compliant unexpired medicines and sample receivers for demonstration"
+            data-testid="admin-seed-showcase-btn"
+          >
+            <Sparkles size={14} />
+            {seeding ? "Populating…" : "Load Showcase Data"}
+          </button>
           <button
             onClick={loadData}
             className="btn-outline !py-2 !px-4 !text-xs"
           >
             Refresh Records
           </button>
+        </div>
+      </div>
+
+      {/* Admin Role Walkthrough Banner */}
+      <div className="mb-8 p-4 rounded-xl bg-neutral-50 hairline border border-neutral-200 grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+        <div className="space-y-1">
+          <div className="font-bold text-neutral-900 flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-full bg-neutral-900 text-white grid place-items-center text-[10px]">1</span>
+            Review Submitted Credentials
+          </div>
+          <p className="text-neutral-600">
+            When clinics or NGOs register, they submit their trust certificates (12A/80G) or clinic licenses.
+          </p>
+        </div>
+        <div className="space-y-1">
+          <div className="font-bold text-neutral-900 flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-full bg-neutral-900 text-white grid place-items-center text-[10px]">2</span>
+            Grant Claiming Permissions
+          </div>
+          <p className="text-neutral-600">
+            Click "Approve Receiver" below to activate their claim rights. Unapproved receivers cannot claim.
+          </p>
+        </div>
+        <div className="space-y-1">
+          <div className="font-bold text-neutral-900 flex items-center gap-1.5">
+            <span className="w-5 h-5 rounded-full bg-neutral-900 text-white grid place-items-center text-[10px]">3</span>
+            Drug Safety Governance
+          </div>
+          <p className="text-neutral-600">
+            Oversee compliance under India's Drugs and Cosmetics Act (Schedule H prescription certification & 30+ day shelf life).
+          </p>
         </div>
       </div>
 

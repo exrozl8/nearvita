@@ -920,6 +920,12 @@ async def admin_overview(admin=Depends(require_admin)):
     }
 
 
+@api.post("/admin/seed-demo")
+async def admin_seed_showcase(admin=Depends(require_admin)):
+    result = await seed_showcase_data(force=True)
+    return result
+
+
 # ---------- Platform Public Stats ----------
 @api.get("/stats")
 async def stats():
@@ -1029,6 +1035,202 @@ async def cleanup_fake_seed_data():
             )
 
 
+async def seed_showcase_data(force: bool = False):
+    """Seed compliant, non-infringing generic healthcare records for showcase."""
+    med_count = await db.medicines.count_documents({})
+    if med_count > 0 and not force:
+        return {"ok": True, "message": "Catalogue already populated"}
+
+    if force:
+        await db.medicines.delete_many({})
+        await db.users.delete_many({"email": {"$in": ["cityhealth@nearvita.org", "seva.clinic@nearvita.org", "janata.care@nearvita.org"]}})
+
+    # 1. Clean Generic Healthcare Donor
+    donor = await db.users.find_one({"email": "cityhealth@nearvita.org"})
+    if not donor:
+        res_d = await db.users.insert_one({
+            "email": "cityhealth@nearvita.org",
+            "password_hash": hash_password("Donor@2026!"),
+            "name": "City Health Hospital Pharmacy",
+            "role": "donor",
+            "organization": "City Health Medical Trust",
+            "location": "Indiranagar, Bengaluru",
+            "phone": "+91 80 2345 1100",
+            "is_approved": True,
+            "created_at": datetime.now(timezone.utc),
+        })
+        donor_id = str(res_d.inserted_id)
+    else:
+        donor_id = str(donor["_id"])
+
+    # 2. Pending Receiver (for Admin to showcase approval)
+    await db.users.update_one(
+        {"email": "seva.clinic@nearvita.org"},
+        {"$set": {
+            "password_hash": hash_password("Receiver@2026!"),
+            "name": "Dr. Sunita Rao",
+            "role": "receiver",
+            "organization": "Seva Charitable Health Dispensary",
+            "location": "Jayanagar, Bengaluru",
+            "phone": "+91 98450 77123",
+            "verification_details": "NGO 12A/80G Reg: 2024/BLR/NGO-912 · Charitable Primary Care",
+            "is_approved": False,
+            "created_at": datetime.now(timezone.utc) - timedelta(hours=3),
+        }},
+        upsert=True
+    )
+
+    # 3. Approved Receiver
+    await db.users.update_one(
+        {"email": "janata.care@nearvita.org"},
+        {"$set": {
+            "password_hash": hash_password("Receiver@2026!"),
+            "name": "Janata Community Health Mission",
+            "role": "receiver",
+            "organization": "Janata Relief Clinic",
+            "location": "Malleshwaram, Bengaluru",
+            "phone": "+91 98112 44332",
+            "verification_details": "Clinical Establishment License: KA-BLR-CL-2023-881",
+            "is_approved": True,
+            "created_at": datetime.now(timezone.utc) - timedelta(days=2),
+        }},
+        upsert=True
+    )
+
+    today = datetime.now(timezone.utc).date()
+    sample_meds = [
+        {
+            "donor_id": donor_id,
+            "name": "Augmentin 625 Duo",
+            "brand": "GlaxoSmithKline (GSK)",
+            "category": "Antibiotic",
+            "form": "Tablet",
+            "dosage": "Amoxicillin 500mg + Clavulanic Acid 125mg",
+            "quantity": 30,
+            "expiry_date": (today + timedelta(days=60)).isoformat(),
+            "location": "Indiranagar, Bengaluru",
+            "description": "Sealed original strip packaging stored in climate-controlled pharmacy depot. Surplus broad-spectrum antibiotic for clinic outreach.",
+            "image_url": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80",
+            "prescription_required": True,
+            "batch_number": "AUG-2026-X1",
+            "storage_condition": "Store below 25°C in dry place",
+            "status": "available",
+            "price": 0.0,
+            "is_free": True,
+            "delivery_fee": 0.0,
+            "created_at": datetime.now(timezone.utc),
+        },
+        {
+            "donor_id": donor_id,
+            "name": "Glycomet-GP 2 Forte",
+            "brand": "USV Pvt Ltd",
+            "category": "Diabetes",
+            "form": "Tablet",
+            "dosage": "Metformin 1000mg + Glimepiride 2mg",
+            "quantity": 50,
+            "expiry_date": (today + timedelta(days=75)).isoformat(),
+            "location": "Jayanagar, Bengaluru",
+            "description": "Essential anti-diabetic maintenance therapy. Uncompromised foil strips donated for low-income diabetic patients.",
+            "image_url": "https://images.unsplash.com/photo-1471864190281-a93a3070b6de?w=600&auto=format&fit=crop&q=80",
+            "prescription_required": True,
+            "batch_number": "GLY-2026-D4",
+            "storage_condition": "Store protected from moisture",
+            "status": "available",
+            "price": 0.0,
+            "is_free": True,
+            "delivery_fee": 0.0,
+            "created_at": datetime.now(timezone.utc),
+        },
+        {
+            "donor_id": donor_id,
+            "name": "Dolo 650",
+            "brand": "Micro Labs Ltd",
+            "category": "Pain Relief",
+            "form": "Tablet",
+            "dosage": "Paracetamol 650mg",
+            "quantity": 100,
+            "expiry_date": (today + timedelta(days=120)).isoformat(),
+            "location": "Koramangala, Bengaluru",
+            "description": "High-demand analgesic and antipyretic tablets. Completely intact blister strips from community donation drive.",
+            "image_url": "https://images.unsplash.com/photo-1550572017-ed24c16a3a4c?w=600&auto=format&fit=crop&q=80",
+            "prescription_required": False,
+            "batch_number": "DLO-2026-P9",
+            "storage_condition": "Room temperature below 30°C",
+            "status": "available",
+            "price": 0.0,
+            "is_free": True,
+            "delivery_fee": 0.0,
+            "created_at": datetime.now(timezone.utc),
+        },
+        {
+            "donor_id": donor_id,
+            "name": "Budecort 200 Inhaler",
+            "brand": "Cipla Ltd",
+            "category": "Respiratory",
+            "form": "Inhaler",
+            "dosage": "Budesonide 200mcg (200 Metered Doses)",
+            "quantity": 10,
+            "expiry_date": (today + timedelta(days=45)).isoformat(),
+            "location": "Indiranagar, Bengaluru",
+            "description": "Original manufacturer tamper-evident seal intact. For asthma and respiratory care dispensing.",
+            "image_url": "https://images.unsplash.com/photo-1576073719676-aa955fc6b889?w=600&auto=format&fit=crop&q=80",
+            "prescription_required": True,
+            "batch_number": "BDC-2026-R2",
+            "storage_condition": "Protect from direct sunlight and heat",
+            "status": "available",
+            "price": 0.0,
+            "is_free": True,
+            "delivery_fee": 0.0,
+            "created_at": datetime.now(timezone.utc),
+        },
+        {
+            "donor_id": donor_id,
+            "name": "Neurobion Forte",
+            "brand": "Procter & Gamble Health",
+            "category": "Vitamins",
+            "form": "Tablet",
+            "dosage": "Vitamin B-Complex + B12",
+            "quantity": 80,
+            "expiry_date": (today + timedelta(days=90)).isoformat(),
+            "location": "Whitefield, Bengaluru",
+            "description": "Essential vitamin supplementation for peripheral nerve health and neuropathy support.",
+            "image_url": "https://images.unsplash.com/photo-1550572017-4fcdbb59cc32?w=600&auto=format&fit=crop&q=80",
+            "prescription_required": False,
+            "batch_number": "NRB-2026-V8",
+            "storage_condition": "Store in a cool dry place",
+            "status": "available",
+            "price": 0.0,
+            "is_free": True,
+            "delivery_fee": 0.0,
+            "created_at": datetime.now(timezone.utc),
+        },
+        {
+            "donor_id": donor_id,
+            "name": "Telma 40 Tablets",
+            "brand": "Glenmark Pharmaceuticals",
+            "category": "Cardiac",
+            "form": "Tablet",
+            "dosage": "Telmisartan 40mg",
+            "quantity": 40,
+            "expiry_date": (today + timedelta(days=50)).isoformat(),
+            "location": "Indiranagar, Bengaluru",
+            "description": "Essential hypertension therapy. Uncompromised foil strips donated for community heart health.",
+            "image_url": "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80",
+            "prescription_required": True,
+            "batch_number": "TLM-2026-C3",
+            "storage_condition": "Store below 25°C",
+            "status": "available",
+            "price": 0.0,
+            "is_free": True,
+            "delivery_fee": 0.0,
+            "created_at": datetime.now(timezone.utc),
+        },
+    ]
+    await db.medicines.insert_many(sample_meds)
+    logger.info("Seeded %d clean showcase medicines and sample receivers", len(sample_meds))
+    return {"ok": True, "count": len(sample_meds), "message": "Showcase data populated successfully"}
+
+
 @app.on_event("startup")
 async def startup():
     global client, db, db_mode
@@ -1065,6 +1267,7 @@ async def startup():
         logger.debug("Index creation note: %s", e)
 
     await cleanup_fake_seed_data()
+    await seed_showcase_data()
 
 
 @app.on_event("shutdown")
