@@ -41,7 +41,19 @@ export default function MedicineDetail() {
   if (m === null)
     return <div className="p-20 text-center text-neutral-500">Loading…</div>;
   if (m === false)
-    return <div className="p-20 text-center">Medicine listing not found.</div>;
+    return (
+      <div className="max-w-[700px] mx-auto px-6 py-20 text-center space-y-4">
+        <div className="font-display text-3xl text-neutral-900">
+          This medicine listing is no longer available.
+        </div>
+        <p className="text-sm text-neutral-600">
+          It may have been claimed, removed, or replaced by refreshed catalogue data.
+        </p>
+        <Link to="/browse" className="btn-primary inline-flex !py-2.5 !px-5">
+          <ChevronLeft size={16} /> Back to catalogue
+        </Link>
+      </div>
+    );
 
   const days = Math.ceil(
     (new Date(m.expiry_date) - new Date()) / (1000 * 60 * 60 * 24)
@@ -54,13 +66,13 @@ export default function MedicineDetail() {
       nav("/login");
       return;
     }
-    if (user.role !== "receiver") {
+    if (user.role !== "receiver" && user.role !== "admin") {
       toast.error(
         "Only registered receivers (NGOs, charitable clinics, or verified patients) can request medicines."
       );
       return;
     }
-    if (!user.is_approved) {
+    if (user.role === "receiver" && !user.is_approved) {
       toast.error(
         "Your receiver account is currently pending administrative verification. Please wait for an administrator to approve your account before claiming medicines."
       );
@@ -75,7 +87,7 @@ export default function MedicineDetail() {
 
     setBusy(true);
     try {
-      await api.post("/claims", {
+      const res = await api.post("/claims", {
         medicine_id: m.id,
         message: msg,
         quantity_requested: qty,
@@ -84,7 +96,7 @@ export default function MedicineDetail() {
         prescription_certified: rxCertified,
       });
       toast.success("Donation claim submitted! Opening coordination thread…");
-      nav("/receiver");
+      nav(`/claims/${res.data.id}`);
     } catch (err) {
       toast.error(formatApiErrorDetail(err.response?.data?.detail));
     } finally {

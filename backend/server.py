@@ -586,11 +586,11 @@ async def serialize_claim(c: dict) -> dict:
 
 @api.post("/claims")
 async def create_claim(payload: ClaimIn, user=Depends(get_current_user)):
-    if user.get("role") != "receiver":
-        raise HTTPException(status_code=403, detail="Only registered receivers can request medicines")
+    if user.get("role") not in ("receiver", "admin"):
+        raise HTTPException(status_code=403, detail="Only registered receivers (NGOs, charitable clinics) or administrators can request medicines")
 
-    # Receiver Approval Check
-    if not user.get("is_approved", False):
+    # Receiver Approval Check (Admins are always authorized)
+    if user.get("role") == "receiver" and not user.get("is_approved", False):
         raise HTTPException(
             status_code=403,
             detail="Receiver verification pending: Your account must be approved by an administrator before you can request and claim medicines."
