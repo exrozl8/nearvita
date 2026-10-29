@@ -3,26 +3,30 @@ import { useAuth } from "@/context/AuthContext";
 import api from "@/lib/api";
 import { Link } from "react-router-dom";
 import { RequestRow } from "./DonorDashboard";
-import { Search, Receipt } from "lucide-react";
+import { Search, ShieldAlert, HeartHandshake } from "lucide-react";
 
 export default function ReceiverDashboard() {
   const { user } = useAuth();
   const [claims, setClaims] = useState([]);
-  const [payments, setPayments] = useState([]);
-  const [tab, setTab] = useState("claims"); // claims | receipts
+  const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const [claimsRes, payRes] = await Promise.all([
-      api.get("/claims?role=receiver"),
-      api.get("/payments/history").catch(() => ({ data: [] })),
-    ]);
-    setClaims(claimsRes.data);
-    setPayments(payRes.data);
+    setLoading(true);
+    try {
+      const claimsRes = await api.get("/claims?role=receiver");
+      setClaims(claimsRes.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     load();
   }, []);
+
+  const isApproved = user?.is_approved;
 
   const grouped = {
     pending: claims.filter((c) => c.status === "pending"),
@@ -36,15 +40,18 @@ export default function ReceiverDashboard() {
       className="max-w-[1400px] mx-auto px-6 md:px-10 py-12"
       data-testid="receiver-dashboard"
     >
+      {/* Header */}
       <div className="grid grid-cols-12 gap-6 items-end mb-10">
         <div className="col-span-12 lg:col-span-8">
-          <div className="eyebrow">Receiver Console & Patient Allocations</div>
+          <div className="eyebrow flex items-center gap-1.5 text-neutral-500">
+            <HeartHandshake size={14} className="text-[#E05A47]" /> Receiver Console & Allocations
+          </div>
           <h1 className="font-display text-6xl md:text-7xl leading-[0.9] tracking-tighter mt-3">
             Your <em style={{ fontStyle: "italic" }}>requests</em>, {user?.name?.split(" ")[0]}.
           </h1>
-          <p className="mt-4 text-neutral-600 text-sm max-w-xl">
-            Track your active medicine claims, verified payments, and arranged
-            handovers. Open any thread to coordinate delivery with the donor pharmacy.
+          <p className="mt-4 text-neutral-600 text-sm max-w-xl leading-relaxed">
+            Track your active surplus medicine claims and coordinate safe physical handover
+            with donor pharmacies and hospitals. All medications are 100% free donations.
           </p>
         </div>
         <div className="col-span-12 lg:col-span-4 flex lg:justify-end">
@@ -53,113 +60,68 @@ export default function ReceiverDashboard() {
             className="btn-primary"
             data-testid="receiver-browse-cta"
           >
-            <Search size={16} /> Find medicines
+            <Search size={16} /> Browse Available Medicines
           </Link>
         </div>
       </div>
 
+      {/* Verification Warning Banner if Not Approved */}
+      {!isApproved && (
+        <div className="mb-8 p-5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 flex items-start gap-3.5 shadow-sm">
+          <ShieldAlert size={22} className="text-amber-700 flex-shrink-0 mt-0.5" />
+          <div className="space-y-1 text-xs">
+            <div className="font-bold text-sm text-amber-950">
+              Administrative Credentialing In Progress
+            </div>
+            <p className="leading-relaxed">
+              In accordance with Indian pharmaceutical regulations, your receiver account requires verification by
+              NearVita compliance administrators before you can reserve or claim medicines.
+            </p>
+            <div className="text-[11px] text-amber-800 pt-1">
+              Organization: <strong>{user?.organization || "Registered Entity"}</strong> · Credentials submitted for review.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
         <Stat label="Pending Requests" value={grouped.pending.length} />
         <Stat label="Accepted / Reserved" value={grouped.accepted.length} accent />
-        <Stat label="Delivered" value={grouped.completed.length} />
-        <Stat label="Verified Payments" value={payments.length} />
+        <Stat label="Handover Complete" value={grouped.completed.length} />
+        <Stat label="Total Requested" value={claims.length} />
       </div>
 
-      {/* Tabs */}
-      <div className="border-b border-[hsl(var(--border))] flex gap-8 mb-6">
-        {[
-          { id: "claims", label: `Active Requests & Claims (${claims.length})` },
-          { id: "receipts", label: `Payment Receipts & Invoices (${payments.length})` },
-        ].map((t) => (
-          <button
-            key={t.id}
-            onClick={() => setTab(t.id)}
-            className={`pb-3 text-sm font-medium transition ${
-              tab === t.id
-                ? "border-b-2 border-[#E05A47] text-[#0D1117]"
-                : "text-neutral-500 hover:text-neutral-800"
-            }`}
+      {/* Claims List Header */}
+      <div className="border-b border-[hsl(var(--border))] flex items-center justify-between pb-3 mb-6">
+        <div className="eyebrow">Active Medicine Claims & Coordination ({claims.length})</div>
+        <button onClick={load} className="text-xs text-neutral-500 hover:text-black underline">
+          Refresh
+        </button>
+      </div>
+
+      {/* Claims List */}
+      <div className="space-y-3">
+        {loading ? (
+          <div className="py-12 text-center text-xs text-neutral-500">Loading your requests…</div>
+        ) : claims.length === 0 ? (
+          <div
+            className="py-16 text-center text-sm text-neutral-500 hairline bg-white rounded-xl space-y-2"
+            data-testid="receiver-empty"
           >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {tab === "claims" && (
-        <div className="space-y-3">
-          {claims.length === 0 ? (
-            <div
-              className="py-16 text-center text-sm text-neutral-500 hairline bg-white rounded-lg"
-              data-testid="receiver-empty"
-            >
-              You haven't requested any medicines yet.{" "}
-              <Link to="/browse" className="underline text-[#E05A47]">
-                Browse the catalogue →
+            <div>You haven't requested any medicines yet.</div>
+            <div>
+              <Link to="/browse" className="underline font-semibold text-[#E05A47]">
+                Browse unexpired surplus catalogue →
               </Link>
             </div>
-          ) : (
-            claims.map((c) => (
-              <RequestRow key={c.id} c={c} role="receiver" onChange={load} />
-            ))
-          )}
-        </div>
-      )}
-
-      {tab === "receipts" && (
-        <div className="space-y-4">
-          {payments.length === 0 ? (
-            <div className="py-16 text-center text-sm text-neutral-500 hairline bg-white rounded-lg">
-              No online payments recorded yet. When you pay for medicines via UPI or card, receipts appear here.
-            </div>
-          ) : (
-            payments.map((p) => (
-              <div
-                key={p.id}
-                className="hairline bg-white p-5 rounded-lg flex flex-col md:flex-row md:items-center justify-between gap-4"
-              >
-                <div className="flex items-start gap-3.5">
-                  <div className="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200 grid place-items-center flex-shrink-0">
-                    <Receipt size={18} />
-                  </div>
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs font-bold text-[#0D1117]">
-                        {p.transaction_id}
-                      </span>
-                      <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800">
-                        {p.status}
-                      </span>
-                    </div>
-                    <div className="font-display text-xl mt-1 text-[#0D1117]">
-                      {p.medicine_name} (x{p.quantity})
-                    </div>
-                    <div className="text-xs text-neutral-500 mt-0.5">
-                      Paid via <strong className="uppercase">{p.method}</strong> · {new Date(p.created_at).toLocaleDateString()}
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 border-t md:border-t-0 pt-3 md:pt-0">
-                  <div className="text-right">
-                    <div className="text-[11px] text-neutral-400">Total Paid</div>
-                    <div className="font-display text-2xl text-[#0D1117]">
-                      ₹{Number(p.amount).toFixed(2)}
-                    </div>
-                  </div>
-                  {p.claim_id && (
-                    <Link
-                      to={`/claims/${p.claim_id}`}
-                      className="btn-outline !py-2 !px-3 !text-xs"
-                    >
-                      View Thread →
-                    </Link>
-                  )}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      )}
+          </div>
+        ) : (
+          claims.map((c) => (
+            <RequestRow key={c.id} c={c} role="receiver" onChange={load} />
+          ))
+        )}
+      </div>
     </div>
   );
 }
@@ -167,11 +129,11 @@ export default function ReceiverDashboard() {
 function Stat({ label, value, accent }) {
   return (
     <div
-      className={`hairline p-5 rounded-lg ${
-        accent ? "bg-[#0D1117] text-white border-[#0D1117]" : "bg-white"
+      className={`hairline p-5 rounded-xl ${
+        accent ? "bg-[#E05A47] text-white border-[#E05A47]" : "bg-white"
       }`}
     >
-      <div className={`eyebrow ${accent ? "!text-white/70" : ""}`}>{label}</div>
+      <div className={`eyebrow ${accent ? "!text-white/80" : ""}`}>{label}</div>
       <div className="font-display text-5xl mt-2 leading-none">
         {String(value).padStart(2, "0")}
       </div>

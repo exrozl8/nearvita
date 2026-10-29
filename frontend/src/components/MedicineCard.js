@@ -84,23 +84,12 @@ export default function MedicineCard({ m, index = 0 }) {
 
       <div className="mt-3 pt-3 border-t border-[hsl(var(--border))] flex items-center justify-between">
         <div>
-          {m.is_free || m.price === 0 ? (
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-              Free Donation
-            </span>
-          ) : (
-            <div className="flex items-baseline gap-1.5">
-              <span className="font-display text-lg text-[#0D1117]">₹{m.price}</span>
-              {m.original_price && m.original_price > m.price && (
-                <span className="text-[11px] text-neutral-400 line-through">
-                  ₹{m.original_price}
-                </span>
-              )}
-            </div>
-          )}
+          <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+            🎁 100% Free Donation
+          </span>
         </div>
-        <span className="text-xs text-[#E05A47] font-medium group-hover:underline">
-          {m.is_free || m.price === 0 ? "Claim Free →" : "Buy / Reserve →"}
+        <span className="text-xs text-[#E05A47] font-semibold group-hover:underline">
+          Request Allocation →
         </span>
       </div>
     </Link>

@@ -6,10 +6,6 @@ import MedicineCard from "@/components/MedicineCard";
 
 const HERO_IMG =
   "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?auto=format&fit=crop&w=1200&q=80";
-const MED_MACRO =
-  "https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=1200&q=80";
-const SORT_IMG =
-  "https://images.unsplash.com/photo-1576602976047-174e57fd0545?auto=format&fit=crop&w=1200&q=80";
 
 export default function Landing() {
   const [stats, setStats] = useState({ available_medicines: 0, donors: 0, receivers: 0, delivered: 0 });
@@ -28,9 +24,9 @@ export default function Landing() {
           <div className="col-span-12 lg:col-span-7 relative">
             <div className="flex items-center gap-3 mb-8 fade-up">
               <span className="chip" data-testid="hero-tagline-chip">
-                <span className="w-1.5 h-1.5 rounded-full bg-[#E05A47]" /> NearVita 2.4 Live
+                <span className="w-1.5 h-1.5 rounded-full bg-[#E05A47]" /> NearVita Network Live
               </span>
-              <span className="eyebrow">Near-Expiry Medicine Network & Payment Gateway</span>
+              <span className="eyebrow">Zero Resale · 100% Free Surplus Medicine Donation</span>
             </div>
             <h1
               className="font-display text-[15vw] sm:text-[10vw] lg:text-[7.2vw] leading-[0.9] tracking-tighter fade-up delay-1"
@@ -41,14 +37,14 @@ export default function Landing() {
                 second life.
               </em>
             </h1>
-            <p className="mt-8 max-w-xl text-lg text-neutral-700 fade-up delay-2">
-              NearVita connects pharmacies, hospitals, and donors to community clinics,
-              NGOs, and patients. Claim free donations or purchase near-expiry inventory
-              at 70-90% discount with instant UPI and card checkout.
+            <p className="mt-8 max-w-xl text-lg text-neutral-700 fade-up delay-2 leading-relaxed">
+              NearVita connects pharmacies, hospitals, and licensed donors to community clinics,
+              NGOs, and charitable healthcare facilities. Facilitating 100% free surplus medicine
+              donations with auditable chains of custody and verified receiver credentials.
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-4 fade-up delay-3">
               <Link to="/browse" className="btn-primary" data-testid="hero-cta-browse">
-                Browse catalogue & checkout <ArrowUpRight size={16} />
+                Browse unexpired catalogue <ArrowUpRight size={16} />
               </Link>
               <Link to="/register" className="btn-outline" data-testid="hero-cta-donate">
                 Register as Donor
@@ -56,10 +52,10 @@ export default function Landing() {
             </div>
             <div className="mt-16 grid grid-cols-2 md:grid-cols-4 gap-6 fade-up delay-4">
               {[
-                ["Available meds", stats.available_medicines],
+                ["Available stock", stats.available_medicines],
                 ["Donors", stats.donors],
-                ["Receivers", stats.receivers],
-                ["Delivered", stats.delivered],
+                ["Verified receivers", stats.receivers],
+                ["Doses delivered", stats.delivered],
               ].map(([label, val]) => (
                 <div key={label} className="border-t border-[hsl(var(--border))] pt-3">
                   <div className="font-display text-4xl md:text-5xl leading-none">
@@ -72,26 +68,26 @@ export default function Landing() {
           </div>
 
           <div className="col-span-12 lg:col-span-5 relative">
-            <div className="relative aspect-[4/5] overflow-hidden hairline sharp-shadow">
+            <div className="relative aspect-[4/5] overflow-hidden hairline sharp-shadow rounded-xl">
               <img
                 src={HERO_IMG}
-                alt="Modern medical interior"
+                alt="Modern medical facility"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-white/85 backdrop-blur-md p-5 border-t border-[hsl(var(--border))]">
-                <div className="eyebrow">Live counter · India</div>
+              <div className="absolute bottom-0 left-0 right-0 bg-white/90 backdrop-blur-md p-5 border-t border-[hsl(var(--border))]">
+                <div className="eyebrow">Public Health Challenge · India</div>
                 <div className="font-display text-3xl leading-tight mt-1">
                   ₹ 1.2Cr of medicine wasted every hour.
                 </div>
                 <div className="text-xs text-neutral-500 mt-1">
-                  Source: Pharma Waste Advisory 2025
+                  Pharma Waste Advisory Report · Zero-resale redistribution prevents destruction.
                 </div>
               </div>
             </div>
-            <div className="absolute -bottom-6 -left-6 hidden lg:block bg-[#0D1117] text-white p-5 max-w-[240px]">
-              <div className="eyebrow !text-white/60">Verified NGO</div>
+            <div className="absolute -bottom-6 -left-6 hidden lg:block bg-[#0D1117] text-white p-5 max-w-[240px] rounded-lg shadow-xl">
+              <div className="eyebrow !text-white/60">Verified NGO Clinic</div>
               <div className="font-display text-xl mt-1">
-                "Three patients treated this week from a single donor listing."
+                "Essential maintenance therapy redirected to forty patients this month."
               </div>
             </div>
           </div>
@@ -99,145 +95,64 @@ export default function Landing() {
       </section>
 
       {/* PILLARS */}
-      <section className="border-t border-[hsl(var(--border))]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 grid grid-cols-1 md:grid-cols-3">
+      <section className="border-t border-[hsl(var(--border))] bg-white">
+        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-16 grid grid-cols-1 md:grid-cols-3 gap-8">
           {[
             {
-              icon: <TimerReset size={22} />,
-              title: "Race against expiry",
+              icon: <TimerReset size={22} className="text-[#E05A47]" />,
+              title: "30+ Day Shelf Life Rule",
               body:
-                "Listings surface urgency by days-left, so critical stock reaches receivers before it's condemned.",
+                "Strict minimum 30-day window required before expiry. Past-date drugs are rejected, ensuring safety before handover.",
             },
             {
-              icon: <ShieldCheck size={22} />,
-              title: "Verified, not viral",
+              icon: <ShieldCheck size={22} className="text-emerald-700" />,
+              title: "Verified Healthcare Receivers",
               body:
-                "Donors and receivers are reviewed. Prescription-only items require credentialed pickup.",
+                "NGOs and charitable clinics are administratively credentialed. Prescription-grade items require medical practitioner certification.",
             },
             {
-              icon: <HeartHandshake size={22} />,
-              title: "Direct handoff",
+              icon: <HeartHandshake size={22} className="text-blue-700" />,
+              title: "Zero Resale, No Cash",
               body:
-                "A private thread between donor and receiver — no marketplaces, no middlemen, no resale.",
+                "Every milligram of medicine on NearVita is a 100% free donation. No commerce, retail markups, or payment fees.",
             },
-          ].map((p, i) => (
-            <div
-              key={p.title}
-              className={`p-10 ${i !== 0 ? "md:border-l border-[hsl(var(--border))]" : ""}`}
-            >
-              <div className="w-10 h-10 border border-[#0D1117] grid place-items-center rounded-sm">
-                {p.icon}
+          ].map((col) => (
+            <div key={col.title} className="p-6 hairline rounded-xl bg-[hsl(var(--secondary))]/30 space-y-3">
+              <div className="w-10 h-10 rounded-lg bg-white hairline grid place-items-center shadow-sm">
+                {col.icon}
               </div>
-              <h3 className="font-display text-3xl mt-6 tracking-tight">{p.title}</h3>
-              <p className="mt-3 text-sm text-neutral-600 leading-relaxed">{p.body}</p>
+              <h3 className="font-display text-2xl">{col.title}</h3>
+              <p className="text-sm text-neutral-600 leading-relaxed">{col.body}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* HOW IT WORKS - EDITORIAL */}
-      <section className="border-t border-[hsl(var(--border))]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 grid grid-cols-12 gap-8">
-          <div className="col-span-12 lg:col-span-4">
-            <div className="eyebrow">Field Notes</div>
-            <h2 className="font-display text-5xl mt-4 tracking-tight">
-              How a donation moves.
+      {/* FEATURED / LATEST FEED */}
+      <section className="max-w-[1400px] mx-auto px-6 md:px-10 py-20">
+        <div className="flex items-end justify-between mb-10">
+          <div>
+            <div className="eyebrow">Recent Surplus Donations</div>
+            <h2 className="font-display text-4xl md:text-5xl mt-2 tracking-tight">
+              Ready for immediate allocation.
             </h2>
-            <p className="text-neutral-600 mt-4 text-sm max-w-sm">
-              Three touchpoints between the shelf and the patient. Auditable at
-              every step.
-            </p>
           </div>
-          <ol className="col-span-12 lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              ["01", "List", "Donor snaps a photo, sets expiry & pickup city. Under 60 seconds."],
-              ["02", "Match", "Receivers search & request. Donor accepts in one tap; a private thread opens."],
-              ["03", "Deliver", "Handoff happens in-person or via courier. Marked delivered, chain closed."],
-            ].map(([n, t, d]) => (
-              <li key={n} className="p-6 bg-white hairline">
-                <div className="font-mono-alt text-xs text-neutral-500">{n}</div>
-                <h4 className="font-display text-3xl mt-3">{t}</h4>
-                <p className="mt-3 text-sm text-neutral-600">{d}</p>
-              </li>
+          <Link to="/browse" className="text-xs font-semibold text-[#E05A47] hover:underline flex items-center gap-1">
+            View full catalogue ({stats.available_medicines}) <ArrowUpRight size={14} />
+          </Link>
+        </div>
+
+        {feed.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {feed.map((m, i) => (
+              <MedicineCard key={m.id} m={m} index={i} />
             ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* IMAGE SPLIT */}
-      <section className="border-t border-[hsl(var(--border))] bg-[#0D1117] text-white">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20 grid grid-cols-12 gap-8 items-center">
-          <div className="col-span-12 md:col-span-5">
-            <img src={MED_MACRO} alt="Pills macro" className="w-full aspect-square object-cover" />
           </div>
-          <div className="col-span-12 md:col-span-7 md:pl-10">
-            <div className="eyebrow !text-white/60">A quiet epidemic</div>
-            <h2 className="font-display text-4xl md:text-6xl leading-[0.95] mt-4">
-              An estimated <span className="text-[#E05A47]">₹15,000&nbsp;crore</span> of medicine
-              is destroyed in India every year — while 1 in 5 patients skip
-              doses due to cost.
-            </h2>
-            <p className="mt-6 text-white/70 max-w-2xl">
-              NearVita treats near-expiry inventory as a supply, not a
-              liability. Donors get a compliant off-ramp. Receivers get a
-              lifeline.
-            </p>
-            <div className="mt-8 flex gap-4">
-              <Link to="/register" className="btn-primary !bg-white !text-[#0D1117]" data-testid="dark-cta-join">
-                Join the network
-              </Link>
-              <Link to="/mission" className="btn-outline !border-white/50 !text-white" data-testid="dark-cta-mission">
-                Read the manifesto
-              </Link>
-            </div>
+        ) : (
+          <div className="p-16 text-center hairline bg-white rounded-xl text-neutral-500 text-sm">
+            Current surplus batch in active distribution. Check back shortly or browse the catalogue.
           </div>
-        </div>
-      </section>
-
-      {/* LIVE FEED */}
-      {feed.length > 0 && (
-        <section className="border-t border-[hsl(var(--border))]">
-          <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-20">
-            <div className="flex items-end justify-between mb-10">
-              <div>
-                <div className="eyebrow">On the ledger</div>
-                <h2 className="font-display text-5xl mt-3 tracking-tight">
-                  Recently listed.
-                </h2>
-              </div>
-              <Link to="/browse" className="text-sm underline underline-offset-4" data-testid="feed-view-all">
-                View all →
-              </Link>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {feed.map((m, i) => (
-                <MedicineCard key={m.id} m={m} index={i} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* CTA */}
-      <section className="border-t border-[hsl(var(--border))]">
-        <div className="max-w-[1400px] mx-auto px-6 md:px-10 py-24 grid grid-cols-12 gap-8">
-          <div className="col-span-12 md:col-span-8">
-            <div className="eyebrow">Take a first step</div>
-            <h2 className="font-display text-6xl md:text-7xl leading-[0.95] mt-4 tracking-tighter">
-              If it's on your shelf,
-              <br />
-              it could save a life.
-            </h2>
-          </div>
-          <div className="col-span-12 md:col-span-4 flex md:items-end">
-            <div className="w-full">
-              <img src={SORT_IMG} alt="Pharmacist sorting" className="w-full aspect-[4/3] object-cover hairline" />
-              <Link to="/register" className="btn-primary mt-6" data-testid="footer-cta-register">
-                Start donating <ArrowUpRight size={16} />
-              </Link>
-            </div>
-          </div>
-        </div>
+        )}
       </section>
     </div>
   );

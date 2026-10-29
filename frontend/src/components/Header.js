@@ -55,19 +55,29 @@ export default function Header() {
                 Receiver Console
               </NavLink>
             )}
+            {user && user.role === "admin" && (
+              <NavLink
+                to="/admin"
+                className={linkCls}
+                data-testid="nav-admin-dashboard"
+              >
+                Admin Console
+              </NavLink>
+            )}
           </nav>
 
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={() => setShowExplorer(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-medium transition shadow-sm"
-              title="Click to view Live Backend Architecture, Database Collections & API Playground"
-            >
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <Server size={13} />
-              <span className="hidden sm:inline font-mono">Backend Live</span>
-            </button>
+            {user && user.role === "admin" && (
+              <button
+                type="button"
+                onClick={() => setShowExplorer(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-full border border-neutral-300 bg-neutral-100 hover:bg-neutral-200 text-neutral-800 text-xs font-medium transition shadow-sm"
+                title="Admin System Status & Architecture Inspection"
+              >
+                <Server size={13} />
+                <span className="hidden sm:inline font-mono">System Telemetry</span>
+              </button>
+            )}
 
             {user ? (
               <>

@@ -3,7 +3,7 @@ import { useParams, Link } from "react-router-dom";
 import api, { formatApiErrorDetail } from "@/lib/api";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
-import { Send, ChevronLeft, ShieldCheck, Clock, User, CheckCircle2 } from "lucide-react";
+import { Send, ChevronLeft, ShieldCheck } from "lucide-react";
 
 export default function ClaimThread() {
   const { id } = useParams();
@@ -105,7 +105,7 @@ export default function ClaimThread() {
                 Verified Handover Channel
               </span>
               <span className="font-mono text-[11px]">
-                {claim.transaction_id || `Claim #${claim.id.slice(-6)}`}
+                Claim #{claim.id.slice(-6)}
               </span>
             </div>
 
@@ -181,11 +181,9 @@ export default function ClaimThread() {
               <span className="font-display text-2xl capitalize text-[#0D1117]">
                 {claim.status}
               </span>
-              {claim.amount_paid && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
-                  Paid ₹{claim.amount_paid}
-                </span>
-              )}
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300">
+                100% Free Donation
+              </span>
             </div>
           </div>
 

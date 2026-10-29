@@ -50,14 +50,7 @@ export default function BackendExplorerModal({ onClose }) {
     const start = performance.now();
     try {
       let res;
-      if (endpoint === "/api/auth/demo-login") {
-        res = await api.post("/auth/login", {
-          email: "receiver@nearvita.health",
-          password: "Receiver@1234",
-        });
-      } else {
-        res = await api.get(endpoint.replace("/api", ""));
-      }
+      res = await api.get(endpoint.replace("/api", ""));
       const end = performance.now();
       setLatency(Math.round(end - start));
       setLiveApiResponse(res.data);
@@ -295,7 +288,7 @@ export default function BackendExplorerModal({ onClose }) {
                   { endpoint: "/api/system/status", label: "GET /api/system/status", method: "GET" },
                   { endpoint: "/api/medicines", label: "GET /api/medicines (Live Inventory)", method: "GET" },
                   { endpoint: "/api/stats", label: "GET /api/stats (Platform Numbers)", method: "GET" },
-                  { endpoint: "/api/auth/demo-login", label: "POST /api/auth/login (JWT Auth)", method: "POST" },
+                  { endpoint: "/api/admin/overview", label: "GET /api/admin/overview (Audit Metrics)", method: "GET" },
                 ].map((item) => (
                   <button
                     key={item.endpoint}
